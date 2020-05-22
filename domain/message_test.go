@@ -310,3 +310,132 @@ func TestMessageRepo_Update(t *testing.T) {
 	}
 
 }
+
+func TestMessageRepo_GetAll(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Errorf("un error %v was not expected when opening a stub database conection", err)
+	}
+	defer db.Close()
+	s := NewMessageRepository(db)
+
+	tests := []struct {
+		name    string
+		s       messageRepoInterface
+		mock    func()
+		want    []Message
+		wantErr bool
+	}{
+		{
+			// When everything works as expected
+			name: "OK",
+			s:    s,
+			mock: func() {
+				rows := sqlmock.NewRows([]string{"Id", "Title", "Body", "CreatedAt"}).AddRow(1, "first title", "first body", created_at).AddRow(2, "second title", "second body", created_at)
+				mock.ExpectPrepare("SELECT (.+) FROM messages").ExpectQuery().WillReturnRows(rows)
+			},
+			want: []Message{
+				{
+					ID:        1,
+					Title:     "first title",
+					Body:      "first body",
+					CreatedAt: created_at,
+				},
+				{
+					ID:        2,
+					Title:     "second title",
+					Body:      "second body",
+					CreatedAt: created_at,
+				},
+			},
+		},
+		{
+			name: "Invalid SQL Syntax",
+			s:    s,
+			mock: func() {
+				_ = sqlmock.NewRows([]string{"Id", "Title", "Body", "CreatedAt"}).AddRow(1, "first title", "first body", created_at).AddRow(2, "second title", "second body", created_at)
+				mock.ExpectPrepare("SELECTS (.+) FROM").ExpectQuery().WillReturnError(errors.New("Error when trying to prepare all messages"))
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			got, err := tt.s.GetAll()
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetAll() error new = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if err == nil && !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetAll() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestMessageRepo_Delete(t *testing.T) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Errorf("an error %v was not expected when opening a stub database connection", err)
+	}
+	defer db.Close()
+	s := NewMessageRepository(db)
+
+	tests := []struct {
+		name    string
+		s       messageRepoInterface
+		msgId   int64
+		mock    func()
+		want    *Message
+		wantErr bool
+	}{
+		{
+			// When everything works as expected
+			name:  "OK",
+			s:     s,
+			msgId: 1,
+			mock: func() {
+				mock.ExpectPrepare("DELETE FROM messages").ExpectExec().WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 1))
+			},
+			wantErr: false,
+		},
+		{
+			name:  "Invalid Id/Not found Id",
+			s:     s,
+			msgId: 1,
+			mock: func() {
+				mock.ExpectPrepare("DELETE FROM messages").ExpectExec().WithArgs(100).WillReturnResult(sqlmock.NewResult(0, 0))
+			},
+			wantErr: true,
+		},
+		{
+			name: "Invalid SQL query",
+			s:    s,
+			mock: func() {
+				mock.ExpectPrepare("DELETE FROMSSS message").ExpectExec().WithArgs(1).WillReturnResult(sqlmock.NewResult(0, 0))
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			tt.mock()
+			err := tt.s.Delete(tt.msgId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Delete() error new = %v, wantErr %v", err, tt.wantErr)
+			}
+		})
+	}
+}
+
+func TestMessageRepo_Initialize(t *testing.T) {
+	dbdriver := "mysql"
+	username := "username"
+	password := "password"
+	host := "host"
+	database := "database"
+	port := "port"
+	dbConnect := MessageRepo.Initialize(dbdriver, username, password, port, host, database)
+	fmt.Println("this is the pull: ", dbConnect)
+}
