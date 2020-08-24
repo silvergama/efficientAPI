@@ -3,6 +3,7 @@ package services
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
 	"testing"
 	"time"
 
@@ -67,4 +68,18 @@ func TestMessagesService_GetMessage_Success(t *testing.T) {
 	assert.EqualValues(t, "the title", msg.Title)
 	assert.EqualValues(t, "the body", msg.Body)
 	assert.EqualValues(t, tm, msg.CreatedAt)
+}
+
+//Test the not found functionality
+func TestMessagesService_GetMessage_NotFoundID(t *testing.T) {
+	domain.MessageRepo = &getDBMock{}
+	getMessageDomain = func(messageID int64) (*domain.Message, errorutils.MessageErr) {
+		return nil, errorutils.NewNotFoundError("the id is not found")
+	}
+	msg, err := MessagesService.GetMessage(1)
+	assert.Nil(t, msg)
+	assert.NotNil(t, err)
+	assert.EqualValues(t, http.StatusNotFound, err.Status())
+	assert.EqualValues(t, "the id is not found", err.Message())
+	assert.EqualValues(t, "not_found", err.Error())
 }
