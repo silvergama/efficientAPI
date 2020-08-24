@@ -4,7 +4,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/silvergama/efficient-api/utils/error_utils"
+	"github.com/silvergama/efficientAPI/utils/errorutils"
 )
 
 type Message struct {
@@ -14,14 +14,14 @@ type Message struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
-func (m *Message) Validate() error_utils.MessageErr {
+func (m *Message) Validate() errorutils.MessageErr {
 	m.Title = strings.TrimSpace(m.Title)
 	m.Body = strings.TrimSpace(m.Body)
 	if m.Title == "" {
-		return error_utils.NewUnprocessibleEntityError("Please enter a valid title")
+		return errorutils.NewUnprocessibleEntityError("Please enter a valid title")
 	}
 	if m.Body == "" {
-		return error_utils.NewUnprocessibleEntityError("Please enter a valid body")
+		return errorutils.NewUnprocessibleEntityError("Please enter a valid body")
 	}
 	return nil
 }

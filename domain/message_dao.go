@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/silvergama/efficient-api/utils/error_formats"
-	"github.com/silvergama/efficient-api/utils/error_utils"
+	"github.com/silvergama/efficientAPI/utils/error_formats"
+	"github.com/silvergama/efficientAPI/utils/errorutils"
 )
 
 var (
@@ -22,11 +22,11 @@ const (
 )
 
 type messageRepoInterface interface {
-	Get(int64) (*Message, error_utils.MessageErr)
-	Create(*Message) (*Message, error_utils.MessageErr)
-	Update(*Message) (*Message, error_utils.MessageErr)
-	Delete(int64) error_utils.MessageErr
-	GetAll() ([]Message, error_utils.MessageErr)
+	Get(int64) (*Message, errorutils.MessageErr)
+	Create(*Message) (*Message, errorutils.MessageErr)
+	Update(*Message) (*Message, errorutils.MessageErr)
+	Delete(int64) errorutils.MessageErr
+	GetAll() ([]Message, errorutils.MessageErr)
 	Initialize(string, string, string, string, string, string) *sql.DB
 }
 
@@ -62,10 +62,10 @@ type Address struct {
 	StreetNumber string
 }
 
-func (mr *messageRepo) Get(messageId int64) (*Message, error_utils.MessageErr) {
+func (mr *messageRepo) Get(messageId int64) (*Message, errorutils.MessageErr) {
 	stmt, err := mr.db.Prepare(queryGetMessage)
 	if err != nil {
-		return nil, error_utils.NewInternalServerError(fmt.Sprintf("Error when trying to prepare message: %s", err.Error()))
+		return nil, errorutils.NewInternalServerError(fmt.Sprintf("Error when trying to prepare message: %s", err.Error()))
 	}
 	defer stmt.Close()
 
@@ -83,10 +83,10 @@ func (mr *messageRepo) Get(messageId int64) (*Message, error_utils.MessageErr) {
 	return &msg, nil
 }
 
-func (mr *messageRepo) GetAll() ([]Message, error_utils.MessageErr) {
+func (mr *messageRepo) GetAll() ([]Message, errorutils.MessageErr) {
 	stmt, err := mr.db.Prepare(queryGetAllMessage)
 	if err != nil {
-		return nil, error_utils.NewInternalServerError(fmt.Sprintf("Error when trying to prepare all messages %s", err.Error()))
+		return nil, errorutils.NewInternalServerError(fmt.Sprintf("Error when trying to prepare all messages %s", err.Error()))
 	}
 	defer stmt.Close()
 
@@ -107,21 +107,21 @@ func (mr *messageRepo) GetAll() ([]Message, error_utils.MessageErr) {
 			&msg.CreatedAt,
 		)
 		if getError != nil {
-			return nil, error_utils.NewInternalServerError(fmt.Sprintf("Error when trying to get message %s", err.Error()))
+			return nil, errorutils.NewInternalServerError(fmt.Sprintf("Error when trying to get message %s", err.Error()))
 		}
 		results = append(results, msg)
 	}
 	if len(results) == 0 {
-		return nil, error_utils.NewNotFoundError("no records found")
+		return nil, errorutils.NewNotFoundError("no records found")
 	}
 	return results, nil
 }
 
-func (mr *messageRepo) Create(msg *Message) (*Message, error_utils.MessageErr) {
+func (mr *messageRepo) Create(msg *Message) (*Message, errorutils.MessageErr) {
 	fmt.Println("WE REACHED THE DOMAIN")
 	stmt, err := mr.db.Prepare(queryInsertMessage)
 	if err != nil {
-		return nil, error_utils.NewInternalServerError(fmt.Sprintf("error when trying to prepare message to save %s", err.Error()))
+		return nil, errorutils.NewInternalServerError(fmt.Sprintf("error when trying to prepare message to save %s", err.Error()))
 	}
 	fmt.Println("WE DIDN'T REACH HERE")
 	defer stmt.Close()
@@ -134,17 +134,17 @@ func (mr *messageRepo) Create(msg *Message) (*Message, error_utils.MessageErr) {
 	}
 	msgId, err := insertResult.LastInsertId()
 	if err != nil {
-		return nil, error_utils.NewInternalServerError(fmt.Sprintf("error trying to save message %s", err.Error()))
+		return nil, errorutils.NewInternalServerError(fmt.Sprintf("error trying to save message %s", err.Error()))
 	}
 	msg.ID = msgId
 
 	return msg, nil
 }
 
-func (mr *messageRepo) Update(msg *Message) (*Message, error_utils.MessageErr) {
+func (mr *messageRepo) Update(msg *Message) (*Message, errorutils.MessageErr) {
 	stmt, err := mr.db.Prepare(queryUpdateMessge)
 	if err != nil {
-		return nil, error_utils.NewInternalServerError(fmt.Sprintf("error when trying to prepare user to save %s", err.Error()))
+		return nil, errorutils.NewInternalServerError(fmt.Sprintf("error when trying to prepare user to save %s", err.Error()))
 	}
 	defer stmt.Close()
 
@@ -155,10 +155,10 @@ func (mr *messageRepo) Update(msg *Message) (*Message, error_utils.MessageErr) {
 	return msg, nil
 }
 
-func (mr *messageRepo) Delete(msgId int64) error_utils.MessageErr {
+func (mr *messageRepo) Delete(msgId int64) errorutils.MessageErr {
 	stmt, err := mr.db.Prepare(queryDeleteMessage)
 	if err != nil {
-		return error_utils.NewInternalServerError(fmt.Sprintf("error when trying prepare message to delete %s", err.Error()))
+		return errorutils.NewInternalServerError(fmt.Sprintf("error when trying prepare message to delete %s", err.Error()))
 	}
 	defer stmt.Close()
 
