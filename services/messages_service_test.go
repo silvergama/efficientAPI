@@ -190,3 +190,36 @@ func TestMessagesService_CreateMessage_Failure(t *testing.T) {
 ///////////////////////////////////////////////////////////////////
 // End of "CreateMessage" test cases
 ///////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////
+// Start of "UpdateMessage"test cases
+///////////////////////////////////////////////////////////////
+func TestMessagesService_UpdateMessage_Success(t *testing.T) {
+	domain.MessageRepo = &getDBMock{}
+	getMessageDomain = func(messageId int64) (*domain.Message, errorutils.MessageErr) {
+		return &domain.Message{
+			ID:    1,
+			Title: "former title",
+			Body:  "former body",
+		}, nil
+	}
+
+	updateMessageDomain = func(msg *domain.Message) (*domain.Message, errorutils.MessageErr) {
+		return &domain.Message{
+			ID:    1,
+			Title: "the title update",
+			Body:  "the body update",
+		}, nil
+	}
+
+	request := &domain.Message{
+		Title: "the title udapte",
+		Body:  "the body update",
+	}
+	msg, err := MessagesService.UpdateMessage(request)
+	assert.NotNil(t, msg)
+	assert.Nil(t, err)
+	assert.EqualValues(t, 1, msg.ID)
+	assert.EqualValues(t, "the title update", msg.Title)
+	assert.EqualValues(t, "the body update", msg.Body)
+}
