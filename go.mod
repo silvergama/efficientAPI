@@ -4,10 +4,9 @@ go 1.13
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.4.1
-	github.com/aws/aws-sdk-go v1.31.2 // indirect
-	github.com/gin-gonic/gin v1.6.3 // indirect
 	github.com/go-sql-driver/mysql v1.5.0
-	github.com/joho/godotenv v1.3.0 // indirect
-	github.com/silvergama/efficient-api v0.0.0-20200823020333-dc54c2cee44e // indirect
-	github.com/stretchr/testify v1.5.1
+	github.com/kr/pretty v0.3.0 // indirect
+	github.com/rogpeppe/go-internal v1.8.0 // indirect
+	github.com/stretchr/testify v1.8.1
+	gopkg.in/check.v1 v1.0.0-20201130134442-10cb98267c6c // indirect
 )
